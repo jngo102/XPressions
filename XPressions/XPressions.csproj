@@ -1,0 +1,86 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<!-- Change this to the path of your modded HK installation -->
+		<HKRefs>$(MSBuildProgramFiles32)/Steam/steamapps/common/Hollow Knight/hollow_knight_Data/Managed/</HKRefs>
+		<!-- Change this to the path where you want the ready-to-upload exports to be -->
+		<ExportPath>$(HKRefs)/Mods/$(TargetName)/Export/</ExportPath>
+		<!-- Uncomment this to generate a documentation file to be included with the mod -->
+		<!--<DocumentationFile>$(OutputPath)/$(AssemblyTitle).xml</DocumentationFile>-->
+	</PropertyGroup>
+	<PropertyGroup>
+		<RootNamespace>XPressions</RootNamespace>
+		<AssemblyName>XPressions</AssemblyName>
+		<TargetFramework>net472</TargetFramework>
+		<AssemblyTitle>XPressions</AssemblyTitle>
+		<Product>XPressions</Product>
+		<Description>A Hollow Knight Mod</Description>
+		<Copyright>Copyright © jngo102 2022</Copyright>
+		<AssemblyVersion>1.0.0.0</AssemblyVersion>
+		<FileVersion>1.0.0.0</FileVersion>
+		<OutputPath>bin\$(Configuration)\</OutputPath>
+		<LangVersion>latest</LangVersion>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+		<DebugSymbols>true</DebugSymbols>
+		<DebugType>full</DebugType>
+		<Optimize>false</Optimize>
+		<OutputPath>bin\Debug\</OutputPath>
+		<DefineConstants>DEBUG;TRACE</DefineConstants>
+		<ErrorReport>prompt</ErrorReport>
+		<WarningLevel>4</WarningLevel>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+		<DebugType>pdbonly</DebugType>
+		<Optimize>true</Optimize>
+		<OutputPath>bin\Release\</OutputPath>
+		<DefineConstants>TRACE</DefineConstants>
+		<ErrorReport>prompt</ErrorReport>
+		<WarningLevel>4</WarningLevel>
+	</PropertyGroup>
+	<Target Name="CopyMod" AfterTargets="PostBuildEvent">
+		<RemoveDir Directories="$(ExportPath)" />
+		<MakeDir Directories="$(ExportPath)" />
+		<MakeDir Directories="$(ExportPath)zip/" />
+		<MakeDir Condition="!Exists('$(HKRefs)Mods/$(TargetName)')" Directories="$(HKRefs)Mods/$(TargetName)" />
+		<Copy SourceFiles="$(TargetPath);$(TargetDir)/$(TargetName).pdb" DestinationFolder="$(HKRefs)Mods/$(TargetName)" />
+		<Copy SourceFiles="ReadMe.md;$(TargetPath);$(TargetDir)/$(TargetName).pdb" DestinationFolder="$(ExportPath)zip/" />
+		<ZipDirectory SourceDirectory="$(ExportPath)zip/" DestinationFile="$(ExportPath)$(TargetName).zip" />
+		<RemoveDir Directories="$(ExportPath)zip/" />
+		<GetFileHash Files="$(ExportPath)$(TargetName).zip" Algorithm="SHA256">
+			<Output TaskParameter="Items" ItemName="FilesWithHashes" />
+		</GetFileHash>
+		<WriteLinesToFile File="$(ExportPath)$(TargetName)/SHA.txt" Lines="@(FilesWithHashes->'%(FileHash)')" Overwrite="true" Encoding="UTF-8" />
+		<!-- Start Hollow Knight (Make sure the folder containing your Steam installation is in your PATH environment variable) -->
+		<Exec Command="steam steam://rungameid/367520" />
+	</Target>
+	<!--ItemGroup>
+		<Compile Include="XPressions.cs" />
+		<Compile Include="Settings.cs" />
+		<Compile Include="Properties\AssemblyInfo.cs" />
+		<None Include="ReadMe.md" />
+	</ItemGroup-->
+	<ItemGroup>
+		<!-- This list of references assumes you have Hollow Knight and the modding API installed -->
+		<Reference Include="Assembly-CSharp">
+			<HintPath>$(HKRefs)Assembly-CSharp.dll</HintPath>
+		</Reference>
+		<Reference Include="UnityEngine.InputLegacyModule">
+			<HintPath>$(HKRefs)UnityEngine.InputLegacyModule.dll</HintPath>
+		</Reference>
+		<Reference Include="MMHOOK_Assembly-CSharp">
+			<HintPath>$(HKRefs)MMHOOK_Assembly-CSharp.dll</HintPath>
+		</Reference>
+		<Reference Include="Newtonsoft.Json">
+			<HintPath>$(HKRefs)Newtonsoft.Json.dll</HintPath>
+		</Reference>
+		<Reference Include="UnityEngine">
+			<HintPath>$(HKRefs)UnityEngine.dll</HintPath>
+		</Reference>
+		<Reference Include="UnityEngine.CoreModule">
+			<HintPath>$(HKRefs)UnityEngine.CoreModule.dll</HintPath>
+		</Reference>
+		<Reference Include="UnityEngine.ImageConversionModule">
+			<HintPath>$(HKRefs)UnityEngine.ImageConversionModule.dll</HintPath>
+		</Reference>
+	</ItemGroup>
+</Project>
